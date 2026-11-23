@@ -1,0 +1,12 @@
+<div class="row g-3">
+<div class="col-md-6"><label class="form-label" for="category_id">Category</label><select id="category_id" class="form-select" name="category_id" required><option value="">Select category</option>@foreach($categories as $category)<option value="{{ $category->category_id }}" @selected(old('category_id', $product->category_id ?? '') == $category->category_id)>{{ $category->category_name }}</option>@endforeach</select></div>
+<div class="col-md-6"><label class="form-label" for="product_name">Product Name</label><input id="product_name" class="form-control" name="product_name" value="{{ old('product_name', $product->product_name ?? '') }}" required></div>
+<div class="col-12"><label class="form-label" for="product_description">Description</label><textarea id="product_description" class="form-control" name="description">{{ old('description', $product->description ?? '') }}</textarea></div>
+<div class="col-md-4"><label class="form-label" for="unit">Unit</label><input id="unit" class="form-control" name="unit" value="{{ old('unit', $product->unit ?? '') }}" placeholder="pack, box" required></div>
+<div class="col-md-4"><label class="form-label" for="unit_price">Unit Price</label><input id="unit_price" type="number" step="0.01" min="0" class="form-control" name="unit_price" value="{{ old('unit_price', $product->unit_price ?? '') }}" required></div>
+<div class="col-md-4"><label class="form-label" for="stock_qty">Stock Quantity</label><input id="stock_qty" type="number" min="0" class="form-control" name="stock_qty" value="{{ old('stock_qty', $product->stock_qty ?? 0) }}" required></div>
+<div class="col-md-4"><label class="form-label" for="lead_time_days">Lead Time (days)</label><input id="lead_time_days" type="number" min="0" class="form-control" name="lead_time_days" value="{{ old('lead_time_days', $product->lead_time_days ?? 0) }}" required></div>
+<div class="col-md-4"><label class="form-label" for="image">Photo</label><input id="image" type="file" class="form-control" name="image" accept="image/jpeg,image/png,image/webp"></div>
+<div class="col-md-4 d-flex align-items-end"><div class="form-check mb-2"><input type="hidden" name="is_available" value="0"><input class="form-check-input" type="checkbox" id="is_available" name="is_available" value="1" @checked(old('is_available', $product->is_available ?? 1))><label class="form-check-label" for="is_available">Available</label></div></div>
+</div>
+<div class="mt-3"></div>
