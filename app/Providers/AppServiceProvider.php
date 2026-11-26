@@ -33,5 +33,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Review::class, ReviewPolicy::class);
         Order::observe(OrderObserver::class);
         Payment::observe(PaymentObserver::class);
+        if ($this->app->environment('production')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
     }
 }
