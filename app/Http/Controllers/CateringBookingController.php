@@ -12,20 +12,19 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
 
 class CateringBookingController extends Controller
 {
-    public function index(): View
+    /**
+     * Catering is booked from the Food Packages tabs on the menu. This route
+     * only keeps old links and bookmarks working.
+     */
+    public function index(Request $request): RedirectResponse
     {
-        return view('catering.index', [
-            'packages' => FoodPackage::where('is_available', true)->orderBy('package_name')->get(),
-            'bookings' => auth()->user()->cateringBookings()
-                ->with(['foodPackage', 'calendar'])
-                ->orderByDesc('created_at')
-                ->paginate(10),
-            'earliestDate' => today()->addDays(3)->toDateString(),
-        ]);
+        return redirect()->to(route('menu.index', array_filter([
+            'tab' => 'packages',
+            'package' => $request->query('package'),
+        ])).'#booking');
     }
 
     public function events(Request $request): JsonResponse
@@ -37,9 +36,7 @@ class CateringBookingController extends Controller
 
         $start = Carbon::parse($validated['start'])->startOfDay();
         $end = Carbon::parse($validated['end'])->startOfDay();
-        $calendars = AvailabilityCalendar::withCount([
-            'bookings as confirmed_bookings_count' => fn ($query) => $query->where('status', 'Confirmed'),
-        ])
+        $calendars = AvailabilityCalendar::withBookedCounts()
             ->whereDate('slot_date', '>=', $start->toDateString())
             ->whereDate('slot_date', '<', $end->toDateString())
             ->get()
@@ -51,7 +48,7 @@ class CateringBookingController extends Controller
             $calendar = $calendars->get($dateString);
             $isBlocked = $calendar?->is_blocked ?? false;
             $maxBookings = $calendar?->max_bookings ?? config('jqfood.default_max_bookings', 2);
-            $confirmedCount = $calendar?->confirmed_bookings_count ?? 0;
+            $confirmedCount = $calendar?->bookedCount() ?? 0;
             $status = $isBlocked
                 ? 'Not Available'
                 : ($confirmedCount >= $maxBookings ? 'Fully Booked' : 'Available');
@@ -86,8 +83,8 @@ class CateringBookingController extends Controller
                 ->first();
 
             if (! $package
-                || $validated['guest_count'] < $package->min_pax
-                || $validated['guest_count'] > $package->max_pax) {
+                || ($package->min_pax !== null && $validated['guest_count'] < $package->min_pax)
+                || ($package->max_pax !== null && $validated['guest_count'] > $package->max_pax)) {
                 throw ValidationException::withMessages([
                     'guest_count' => 'The selected package is unavailable or does not support this guest count.',
                 ]);
@@ -119,14 +116,15 @@ class CateringBookingController extends Controller
                 'event_time' => $validated['event_time'],
                 'event_location' => $validated['event_location'],
                 'guest_count' => $validated['guest_count'],
+                'drink_option' => $package->pricing_type === 'Per Pax' ? ($validated['drink_option'] ?? 'Solo') : null,
                 'special_requests' => $validated['special_requests'] ?? null,
                 'status' => 'Pending',
                 'created_at' => now(),
             ]);
         });
 
-        return redirect()->route('catering.index')
-            ->with('status', 'Catering request submitted.')
+        return redirect()->route('orders.index')
+            ->with('status', 'Catering request submitted. We will review it and message you the down payment details once confirmed.')
             ->with('booking_id', $booking->booking_id);
     }
 

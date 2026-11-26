@@ -50,9 +50,42 @@ class AvailabilityCalendar extends Model
         }
     }
 
+    /** Order types that use up a day's capacity. Regular orders still show on the calendar. */
+    public const CAPACITY_ORDER_TYPES = ['Catering', 'Bulk', 'Packed Lunch'];
+
+    public function scopeWithBookedCounts($query)
+    {
+        return $query->withCount([
+            'orders as event_orders_count' => fn ($orders) => $orders
+                ->whereIn('order_type', self::CAPACITY_ORDER_TYPES)
+                ->where('status', '!=', 'Cancelled'),
+            'bookings as unlinked_confirmed_count' => fn ($bookings) => $bookings
+                ->where('status', 'Confirmed')
+                ->whereNull('order_id'),
+        ]);
+    }
+
+    /**
+     * Catering, bulk and packed-lunch orders that are still active on this date.
+     * Cancelling an order frees its slot.
+     */
+    public function bookedCount(): int
+    {
+        if (array_key_exists('event_orders_count', $this->attributes)) {
+            return (int) $this->attributes['event_orders_count']
+                + (int) ($this->attributes['unlinked_confirmed_count'] ?? 0);
+        }
+
+        return $this->orders()
+            ->whereIn('order_type', self::CAPACITY_ORDER_TYPES)
+            ->where('status', '!=', 'Cancelled')
+            ->count()
+            + $this->bookings()->where('status', 'Confirmed')->whereNull('order_id')->count();
+    }
+
     public function confirmedBookingCount(): int
     {
-        return $this->bookings()->where('status', 'Confirmed')->count();
+        return $this->bookedCount();
     }
 
     public function availabilityStatus(): string
@@ -61,7 +94,7 @@ class AvailabilityCalendar extends Model
             return 'Not Available';
         }
 
-        return $this->confirmedBookingCount() >= $this->max_bookings
+        return $this->bookedCount() >= $this->max_bookings
             ? 'Fully Booked'
             : 'Available';
     }

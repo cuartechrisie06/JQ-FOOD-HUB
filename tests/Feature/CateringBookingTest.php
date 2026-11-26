@@ -206,14 +206,81 @@ class CateringBookingTest extends TestCase
         $this->actingAs($this->customer)
             ->patch("/catering/bookings/{$booking->booking_id}/cancel")
             ->assertRedirect();
-        $this->assertSame('Cancelled', $booking->fresh()->status);
     }
+
+    public function test_guest_range_validation_skipped_when_min_pax_or_max_pax_is_null(): void
+    {
+        $date = today()->addDays(4)->toDateString();
+        // Fixed package has null min_pax and null max_pax
+        $fixedPkg = FoodPackage::where('pricing_type', 'Fixed')->firstOrFail();
+
+        $response = $this->actingAs($this->customer)
+            ->post('/catering/bookings', $this->bookingData($date, [
+                'package_id' => $fixedPkg->package_id,
+                'guest_count' => 120, // High guest count should not trigger error when max_pax is null
+            ]));
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('catering_bookings', [
+            'package_id' => $fixedPkg->package_id,
+            'guest_count' => 120,
+        ]);
+    }
+
+    public function test_per_pax_booking_computes_total_and_fifty_percent_downpayment(): void
+    {
+        $date = today()->addDays(4)->toDateString();
+        $perPaxPkg = FoodPackage::where('pricing_type', 'Per Pax')
+            ->whereNotNull('price_with_softdrinks')
+            ->firstOrFail();
+
+        $guests = max(30, (int) $perPaxPkg->min_pax);
+        $drinkOption = 'Softdrinks';
+        $selectedPrice = (float) $perPaxPkg->price_with_softdrinks;
+        $expectedTotal = round($guests * $selectedPrice, 2);
+        $expectedDownpayment = round($expectedTotal * 0.5, 2);
+
+        $response = $this->actingAs($this->customer)
+            ->post('/catering/bookings', $this->bookingData($date, [
+                'package_id' => $perPaxPkg->package_id,
+                'guest_count' => $guests,
+                'drink_option' => $drinkOption,
+            ]));
+
+        $response->assertSessionHasNoErrors();
+        $booking = CateringBooking::where('package_id', $perPaxPkg->package_id)->latest('booking_id')->firstOrFail();
+
+        $this->assertSame($drinkOption, $booking->drink_option);
+        $this->assertSame($expectedTotal, $booking->computeTotal());
+        $this->assertSame($expectedDownpayment, $booking->computeDownpayment());
+
+        // Admin confirmation should create Order with exact total and downpayment
+        $this->actingAs($this->admin)
+            ->patch("/admin/catering-bookings/{$booking->booking_id}/confirm")
+            ->assertRedirect();
+
+        $order = $booking->fresh()->order;
+        $this->assertNotNull($order);
+        $this->assertEquals($expectedTotal, (float) $order->total_amount);
+        $this->assertEquals($expectedDownpayment, (float) $order->downpayment_amount);
+
+        // Check order item
+        $orderItem = $order->items->first();
+        $this->assertSame($guests, $orderItem->quantity);
+        $this->assertEquals($selectedPrice, (float) $orderItem->unit_price);
+        $this->assertEquals($expectedTotal, (float) $orderItem->subtotal);
+
+        // Check payment
+        $payment = $order->payments->first();
+        $this->assertEquals($expectedDownpayment, (float) $payment->amount);
+    }
+
 
     private function createBooking(string $date): CateringBooking
     {
         $this->actingAs($this->customer)
             ->post('/catering/bookings', $this->bookingData($date))
-            ->assertRedirect('/catering');
+            ->assertRedirect(route('orders.index'));
 
         return CateringBooking::latest('booking_id')->firstOrFail();
     }

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\CateringBooking;
 use App\Models\Order;
 use App\Models\Review;
+use Database\Seeders\DemoDataSeeder;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
@@ -14,9 +15,9 @@ class DemoSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_demo_seeder_is_repeatable_and_refuses_production(): void
+    public function test_demo_data_seeder_is_repeatable_and_refuses_production(): void
     {
-        $seeder = new DemoSeeder;
+        $seeder = new DemoDataSeeder;
         $seeder->run();
         $seeder->run();
 
@@ -35,5 +36,10 @@ class DemoSeederTest extends TestCase
         } finally {
             $this->app->detectEnvironment(fn () => 'testing');
         }
+    }
+
+    public function test_demo_seeder_backward_compatible_alias(): void
+    {
+        $this->assertInstanceOf(DemoDataSeeder::class, new DemoSeeder);
     }
 }

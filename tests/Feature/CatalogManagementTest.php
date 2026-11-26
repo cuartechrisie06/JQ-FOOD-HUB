@@ -31,33 +31,6 @@ class CatalogManagementTest extends TestCase
         ]);
     }
 
-    public function test_category_crud(): void
-    {
-        $this->actingAs($this->admin)
-            ->post('/admin/categories', [
-                'category_name' => 'Frozen Foods',
-                'description' => 'Frozen products',
-            ])
-            ->assertRedirect('/admin/categories');
-
-        $category = Category::where('category_name', 'Frozen Foods')->firstOrFail();
-
-        $this->actingAs($this->admin)
-            ->put("/admin/categories/{$category->category_id}", [
-                'category_name' => 'Frozen Items',
-                'description' => 'Updated',
-            ])
-            ->assertRedirect('/admin/categories');
-
-        $this->assertDatabaseHas('categories', ['category_name' => 'Frozen Items']);
-
-        $this->actingAs($this->admin)
-            ->delete("/admin/categories/{$category->category_id}")
-            ->assertRedirect('/admin/categories');
-
-        $this->assertDatabaseMissing('categories', ['category_id' => $category->category_id]);
-    }
-
     public function test_product_crud(): void
     {
         Storage::fake('public');
@@ -118,7 +91,7 @@ class CatalogManagementTest extends TestCase
             ->assertRedirect('/admin/packages');
 
         $package = FoodPackage::where('package_name', 'Birthday Package')->firstOrFail();
-        $this->assertDatabaseCount('package_items', 2);
+        $this->assertSame(2, $package->items()->count());
 
         $this->actingAs($this->admin)
             ->put("/admin/packages/{$package->package_id}", [
@@ -192,7 +165,6 @@ class CatalogManagementTest extends TestCase
         ]);
 
         $this->actingAs($customer)->get('/admin/products')->assertRedirect('/');
-        $this->actingAs($customer)->get('/admin/categories')->assertRedirect('/');
         $this->actingAs($customer)->get('/admin/packages')->assertRedirect('/');
     }
 }

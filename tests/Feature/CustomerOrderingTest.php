@@ -65,7 +65,7 @@ class CustomerOrderingTest extends TestCase
             ->post("/cart/{$secondProduct->product_id}", ['quantity' => 2])
             ->assertRedirect('/cart');
 
-        $this->get('/cart')->assertOk()->assertSee('PHP 1,100.00');
+        $this->get('/cart')->assertOk()->assertSee('₱1,100.00');
         $this->placeOrder(today()->addDay()->toDateString())->assertRedirect();
 
         $order = Order::with('items')->firstOrFail();

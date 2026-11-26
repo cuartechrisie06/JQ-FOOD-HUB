@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateOrderStatusRequest;
+use App\Models\CateringBooking;
 use App\Models\Order;
 use App\Services\OrderStatusService;
 use Illuminate\Http\RedirectResponse;
@@ -17,14 +18,21 @@ class AdminOrderController extends Controller
             'date' => ['nullable', 'date'],
             'status' => ['nullable', 'in:Pending,Confirmed,Preparing,Ready,Out for Delivery,Completed,Cancelled'],
             'search' => ['nullable', 'string', 'max:100'],
+            'payment' => ['nullable', 'in:Pending,Verified,Rejected'],
+            'method' => ['nullable', 'in:Pickup,Delivery'],
         ]);
 
-        $orders = Order::with(['user', 'calendar', 'items.product'])
+        $orders = Order::with(['user', 'calendar', 'items.product', 'payments'])
             ->when($request->filled('date'), fn ($query) => $query->whereHas(
                 'calendar',
                 fn ($calendar) => $calendar->whereDate('slot_date', $validated['date'])
             ))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $validated['status']))
+            ->when($request->filled('payment'), fn ($query) => $query->whereHas(
+                'payments',
+                fn ($payments) => $payments->where('status', $validated['payment'])
+            ))
+            ->when($request->filled('method'), fn ($query) => $query->where('fulfillment_method', $validated['method']))
             ->when($request->filled('search'), function ($query) use ($validated) {
                 $search = trim($validated['search']);
                 $orderNumber = strtoupper(preg_replace('/^JQ[- ]?/i', '', $search));
@@ -46,6 +54,11 @@ class AdminOrderController extends Controller
         return view('admin.orders.index', [
             'orders' => $orders,
             'transitions' => app(OrderStatusService::class),
+            'pendingBookings' => CateringBooking::with(['user', 'foodPackage', 'calendar'])
+                ->where('status', 'Pending')
+                ->whereNull('order_id')
+                ->orderBy('created_at')
+                ->get(),
         ]);
     }
 

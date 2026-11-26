@@ -11,13 +11,19 @@ class CustomerOrderController extends Controller
     {
         return view('orders.index', [
             'orders' => auth()->user()->orders()->with('calendar')->latest('created_at')->paginate(10),
+            'bookings' => auth()->user()->cateringBookings()
+                ->with(['foodPackage', 'calendar'])
+                ->whereNull('order_id')
+                ->latest('created_at')
+                ->limit(20)
+                ->get(),
         ]);
     }
 
     public function show(Order $order): View
     {
         abort_unless($order->user_id === auth()->id(), 404);
-        $order->load(['items.product', 'calendar', 'payments']);
+        $order->load(['items.product', 'items.foodPackage', 'calendar', 'payments']);
         $statusNotifications = $order->notifications()
             ->where('type', 'Status Change')
             ->orderBy('created_at')

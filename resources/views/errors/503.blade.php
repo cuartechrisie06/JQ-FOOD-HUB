@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Back soon')
+@section('code', '503')
+@section('heading', 'Back soon')
+@section('message', 'JQ Food Hub is briefly down for maintenance. Please check back in a few minutes.')

@@ -8,7 +8,7 @@
 
 <div class="card mb-4"><div class="card-body">
 <h2 class="h5">CSV Import</h2>
-<form method="POST" action="{{ route('admin.products.import') }}" enctype="multipart/form-data" class="d-flex gap-2 align-items-end">
+<form method="POST" action="{{ route('admin.products.import') }}" enctype="multipart/form-data" class="d-flex flex-wrap gap-2 align-items-end" data-once>
 @csrf
 <div class="flex-grow-1"><label class="form-label" for="csv_file">CSV File</label><input id="csv_file" class="form-control" type="file" name="csv_file" accept=".csv,text/csv" required></div>
 <button class="btn btn-jq">Import</button>
@@ -26,12 +26,12 @@
 </div></div>
 
 <div class="card"><div class="table-responsive"><table class="table align-middle mb-0">
-<thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Lead Time</th><th>Available</th><th></th></tr></thead>
+<thead><tr><th>Photo</th><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Lead Time</th><th>Available</th><th></th></tr></thead>
 <tbody>
 @forelse($products as $product)
 <tr>
-<td>{{ $product->product_name }}</td><td>{{ $product->category->category_name }}</td><td>PHP {{ number_format($product->unit_price, 2) }}</td><td>{{ $product->stock_qty }}</td><td>{{ $product->lead_time_days }} day(s)</td>
-<td><span class="badge {{ $product->is_available ? 'text-bg-success' : 'text-bg-secondary' }}">{{ $product->is_available ? 'Active' : 'Deactivated' }}</span></td>
+<td><img src="{{ $product->image_url }}" alt="" class="rounded-2" style="width:56px;height:42px;object-fit:cover">@unless($product->has_image)<div class="badge-status badge-warning mt-1"><i class="bi bi-camera" aria-hidden="true"></i> No photo</div>@endunless</td><td>{{ $product->product_name }}</td><td>{{ $product->category->category_name }}</td><td>₱{{ number_format($product->unit_price, 2) }}</td><td>{{ $product->stock_qty }}</td><td>{{ $product->lead_time_days }} day(s)</td>
+<td><span class="badge-status {{ $product->is_available ? 'badge-success' : 'badge-secondary' }}">{{ $product->is_available ? 'Active' : 'Deactivated' }}</span></td>
 <td class="text-end">
 <a class="btn btn-sm btn-outline-dark" href="{{ route('admin.products.edit', $product) }}">Edit</a>
 <form class="d-inline" method="POST" action="{{ route('admin.products.toggle', $product) }}">
@@ -40,7 +40,7 @@
 </td>
 </tr>
 @empty
-<tr><td colspan="7" class="text-center text-muted py-4">No products found. Add your first product above.</td></tr>
+<tr><td colspan="8" class="text-center text-muted py-4">No products found. Add your first product above.</td></tr>
 @endforelse
 </tbody>
 </table></div></div>

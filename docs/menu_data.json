@@ -1,0 +1,100 @@
+{
+  "notes": [
+    "Transcribed from the client's menu images. Obvious spelling typos were corrected (Brocolli to Broccoli, igado to Igado, ginagmay to Ginagmay). Confirm with the client.",
+    "Fixed-price food packages do not state a guest range on the menu, so min_pax and max_pax are null until the client provides them.",
+    "The Budget Meals and Buffet Meals images appear cropped at the bottom and may have more options than listed here. Confirm with the client.",
+    "Food Package 5,500 Package 4 lists only 5 dishes plus fruits on the menu even though the tier says 6 viands. Confirm with the client."
+  ],
+  "fixed_groups": [
+    {
+      "group_name": "Food Package 4,000 (4 Viands w/ Fruits)",
+      "price": 4000,
+      "freebie": "FREE 30 pcs Lumpia (Ubod or Shanghai)",
+      "packages": [
+        { "name": "Package 1", "items": ["Fried Chicken", "Beef Steak", "Pork Humba", "Kinilaw", "Fruits"] },
+        { "name": "Package 2", "items": ["Chicken Fingers", "Beef Broccoli", "Chopsuey", "Pork Igado", "Fruits"] },
+        { "name": "Package 3", "items": ["Sweet & Sour Chicken", "Garlic Shrimp", "Beef Steak", "Pork Ginagmay", "Fruits"] },
+        { "name": "Package 4", "items": ["Fried Chicken", "Beef Broccoli", "Kinilaw", "Sweet & Sour Pork", "Fruits"] }
+      ]
+    },
+    {
+      "group_name": "Food Package 5,500 (6 Viands w/ Fruits)",
+      "price": 5500,
+      "freebie": "FREE 30 pcs Lumpia (Ubod or Shanghai)",
+      "packages": [
+        { "name": "Package 1", "items": ["Fried Chicken", "Beef Steak", "Pork Adobo", "Kinilaw", "Sweet & Sour Chicken", "Bam-E Guisado", "Fruits"] },
+        { "name": "Package 2", "items": ["Fried Chicken", "Chicken Curry", "Beef Broccoli", "Sweet & Sour Pork", "Garlic Shrimp", "Bihon Guisado", "Fruits"] },
+        { "name": "Package 3", "items": ["Chicken Fingers", "Buffalo Wings", "Beef Steak", "Pork Humba", "Kinilaw", "Chopsuey", "Fruits"] },
+        { "name": "Package 4", "items": ["Chicken Fingers", "Beef Broccoli", "Pork Ginagmay", "Chicken Fillet w/ White Sauce", "Bihon Guisado", "Fruits"] }
+      ]
+    },
+    {
+      "group_name": "Food Package 7,000 (7 Viands w/ Fruits)",
+      "price": 7000,
+      "freebie": "FREE 30 pcs Lumpia (Ubod or Shanghai)",
+      "packages": [
+        { "name": "Package 1", "items": ["Fried Chicken", "Beef Steak", "Pork Adobo", "Kinilaw", "Sweet & Sour Chicken", "Chopsuey", "Bam-E Guisado", "Fruits"] },
+        { "name": "Package 2", "items": ["Chicken Fingers", "Buffalo Wings", "Beef Broccoli", "Pork Ginagmay", "Kinilaw", "Mix Seafood", "Bihon Guisado", "Fruits"] },
+        { "name": "Package 3", "items": ["Fried Chicken", "Beef Steak", "Pork Humba", "Fish Fillet", "Sweet & Sour Chicken", "Bam-E Guisado", "Chopsuey", "Fruits"] },
+        { "name": "Package 4", "items": ["Fried Chicken", "Chicken Fingers", "Beef Steak", "Kinilaw", "Sweet & Sour Pork", "Bihon Guisado", "Mix Seafood", "Fruits"] }
+      ]
+    },
+    {
+      "group_name": "Food Package 9,000 (8 Viands w/ Fruits)",
+      "price": 9000,
+      "freebie": "FREE 30 pcs Fresh Lumpia",
+      "packages": [
+        { "name": "Package 1", "items": ["Fried Chicken", "Chicken Fingers", "Beef Steak", "Pork Humba", "Sweet & Sour Fish", "Chopsuey", "Kinilaw", "Bam-E Guisado", "Fruits"] },
+        { "name": "Package 2", "items": ["Fried Chicken", "Sweet & Sour Chicken", "Beef Broccoli", "Pork Adobo", "Kinilaw", "Chopsuey", "Mix Seafood", "Bihon Guisado", "Fruits"] },
+        { "name": "Package 3", "items": ["Fried Chicken", "Buffalo Wings", "Beef Steak", "Pork Ginagmay", "Fish Fillet w/ White Sauce", "Garlic Shrimp", "Bam-E Guisado", "Chopsuey", "Fruits"] },
+        { "name": "Package 4", "items": ["Fried Chicken", "Beef Broccoli", "Pork Humba", "Kinilaw", "Chicken Fillet w/ White Sauce", "Chopsuey", "Bihon Guisado", "Mix Seafood", "Fruits"] }
+      ]
+    },
+    {
+      "group_name": "Food Package 10,000 (10 Viands w/ Fruits)",
+      "price": 10000,
+      "freebie": "FREE 30 pcs Fresh Lumpia",
+      "packages": [
+        { "name": "Package 1", "items": ["Fried Chicken", "Chicken Fingers", "Lumpia Ubod or Shanghai", "Fish Fillet Sweet & Sour", "Kinilaw", "Beef Steak", "Pork Adobo", "Beef Caldereta", "Chopsuey", "Bam-E Guisado", "Fresh Fruits"] },
+        { "name": "Package 2", "items": ["Fried Chicken", "Garlic Wings", "Chicken Fillet Sweet & Sour", "Kinilaw", "Mixed Seafoods", "Canton Guisado", "Beef Broccoli", "Lumpia Ubod or Shanghai", "Chopsuey", "Pork Igado", "Fresh Fruits"] },
+        { "name": "Package 3", "items": ["Chicken Fillet w/ White Sauce", "Buffalo Wings", "Chicken Shanghai", "Kinilaw", "Chopsuey", "Garlic Mix Seafoods", "Fish Fillet Sweet & Sour", "Pork Adobo", "Beef Broccoli", "Bam-E Guisado", "Fresh Fruits"] },
+        { "name": "Package 4", "items": ["Fried Chicken", "Chicken Fingers", "Lumpia Ubod", "Garlic Shrimp", "Kinilaw", "Bihon Guisado", "Beef Steak", "Pork Humba", "Sweet & Sour Pork", "Chopsuey", "Fresh Fruits"] }
+      ]
+    }
+  ],
+  "per_pax_groups": [
+    {
+      "group_name": "Budget Meals",
+      "min_pax": 25,
+      "options": [
+        { "name": "Option 1", "items": ["Rice", "Chicken Adobo", "2 pcs Chicken Bola2x", "2 pcs Lumpia Ubod"], "solo": 100, "water": 115, "softdrinks": 125 },
+        { "name": "Option 2", "items": ["Rice", "Fried Chicken", "Chicken Bam-E", "2 pcs Lumpia Shanghai"], "solo": 100, "water": 115, "softdrinks": 125 },
+        { "name": "Option 3", "items": ["Rice", "Chicken Afritada", "Chicken Pancit Canton", "3 pcs Lumpia Shanghai"], "solo": 100, "water": 115, "softdrinks": 125 },
+        { "name": "Option 4", "items": ["Rice", "Sweet and Sour Fish Fillet", "2 pcs Chicken Bola2x", "2 pcs Lumpia Ubod"], "solo": 100, "water": 115, "softdrinks": 125 },
+        { "name": "Option 5", "items": ["Rice", "Pork Adobo", "2 pcs Chicken Bola2x", "2 pcs Lumpia Ubod"], "solo": 110, "water": 125, "softdrinks": 135 },
+        { "name": "Option 6", "items": ["Rice", "Pork Humba", "Pork Bam-E", "2 pcs Lumpia Ubod"], "solo": 110, "water": 125, "softdrinks": 135 },
+        { "name": "Option 7", "items": ["Rice", "Beef Broccoli", "Chicken Bihon", "2 pcs Lumpia Shanghai"], "solo": 140, "water": 155, "softdrinks": 165 }
+      ]
+    },
+    {
+      "group_name": "Snacks",
+      "min_pax": 25,
+      "options": [
+        { "name": "Option 1", "items": ["Chicken Bihon", "3 pcs Lumpia Shanghai", "2 pcs Loaf Bread", "1 slice Brownies"], "solo": 95, "water": 110, "softdrinks": 120 },
+        { "name": "Option 2", "items": ["Beef Spaghetti", "3 pcs Lumpia Shanghai", "2 pcs Loaf Bread"], "solo": 115, "water": 125, "softdrinks": 135 },
+        { "name": "Option 3", "items": ["Beef Burger", "Fried Chicken", "2 pcs Loaf Bread"], "solo": 120, "water": 135, "softdrinks": 150 },
+        { "name": "Option 4", "items": ["Beef Spaghetti", "Fried Chicken", "2 pcs Loaf Bread"], "solo": 135, "water": 150, "softdrinks": 160 },
+        { "name": "Option 5", "items": ["4 pcs Beef Quesadilla", "Beef Burger"], "solo": 140, "water": 155, "softdrinks": 165 }
+      ]
+    },
+    {
+      "group_name": "Buffet Meals",
+      "min_pax": 25,
+      "options": [
+        { "name": "Option 1", "items": ["Rice", "Chicken Fingers", "Garlic Shrimp", "Bihon Guisado", "Kinilaw", "Fruits", "Brownies or Macaroons", "Free Fresh Lumpia"], "solo": 280, "water": 290, "softdrinks": 300 },
+        { "name": "Option 2", "items": ["Rice", "Sweet & Sour Chicken", "Pork Humba", "Fish Fillet", "Beef Steak", "Fruits", "Brownies or Macaroons", "Free Lumpia Shanghai"], "solo": 290, "water": 300, "softdrinks": 310 },
+        { "name": "Option 3", "items": ["Rice", "Fried Chicken", "Pork Humba", "Pancit Guisado", "Bakareta", "Fruits", "Brownies or Macaroons", "Free Lumpia Shanghai"], "solo": 300, "water": 310, "softdrinks": 320 }
+      ]
+    }
+  ]
+}

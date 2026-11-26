@@ -8,7 +8,6 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use Carbon\Carbon;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -86,20 +85,7 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            $calendar = AvailabilityCalendar::whereDate('slot_date', $fulfillmentDate->toDateString())->first();
-            if (! $calendar) {
-                try {
-                    $calendar = AvailabilityCalendar::create([
-                        'slot_date' => $fulfillmentDate->toDateString(),
-                        'max_bookings' => 0,
-                        'is_blocked' => false,
-                        'remarks' => null,
-                    ]);
-                } catch (UniqueConstraintViolationException $exception) {
-                    $calendar = AvailabilityCalendar::whereDate('slot_date', $fulfillmentDate->toDateString())
-                        ->firstOrFail();
-                }
-            }
+            $calendar = AvailabilityCalendar::getOrCreateForDate($fulfillmentDate->toDateString());
             $calendar = AvailabilityCalendar::where('calendar_id', $calendar->calendar_id)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -123,7 +109,7 @@ class CheckoutController extends Controller
                 $totalCents += $subtotalCents;
                 $bulkQuantity = $bulkQuantity || $quantity >= 10;
 
-                if ($product->category()->where('category_name', 'Packed Lunch')->exists()) {
+                if ($product->category()->whereIn('category_name', ['Packed Lunch', 'Packed Meals'])->exists()) {
                     $containsPackedLunch = true;
                 }
 
@@ -140,6 +126,13 @@ class CheckoutController extends Controller
             $orderType = $containsPackedLunch
                 ? 'Packed Lunch'
                 : (($bulkQuantity || ($customerIsBusiness && $totalQuantity >= 10)) ? 'Bulk' : 'Regular');
+            if (in_array($orderType, ['Bulk', 'Packed Lunch'], true)
+                && $calendar->bookedCount() >= $calendar->max_bookings) {
+                throw ValidationException::withMessages([
+                    'fulfillment_date' => 'This date is fully booked for bulk orders and packed lunches. Please choose another date.',
+                ]);
+            }
+
             $total = $totalCents / 100;
             $downpayment = in_array($orderType, ['Bulk', 'Packed Lunch'], true)
                 ? round($total * 0.5, 2)

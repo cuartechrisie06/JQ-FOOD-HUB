@@ -382,3 +382,28 @@ Customers who completed an order submit a rating (1 to 5) and comment. Admin app
 - Do `Regular` orders require a down payment?
 - Is `stock_qty` decremented automatically on confirmation, or manually by admin?
 - Does a Package order go through `catering_bookings` or straight through checkout?
+
+---
+
+## 13. Schema Changes
+
+### `food_packages` (Altered)
+Migration: `2026_11_26_000001_update_food_packages_and_catering_bookings_table.php`
+
+| Field | Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `package_group` | VARCHAR(100) | YES | NULL | Group classification from menu catalog (e.g., Set 1 - 2,500, Budget Meals, Snacks, Buffet Meals) |
+| `pricing_type` | ENUM('Fixed','Per Pax') | NO | 'Fixed' | Pricing model: Fixed price or Per Pax pricing |
+| `price_with_water` | DECIMAL(10,2) | YES | NULL | Per-pax price tier with bottled water included |
+| `price_with_softdrinks` | DECIMAL(10,2) | YES | NULL | Per-pax price tier with canned softdrinks included |
+| `freebie` | VARCHAR(100) | YES | NULL | Free inclusions (e.g. Free 1.5L Coke, Free Rice & Drinks) |
+| `min_pax` | INT | YES | NULL | Altered to nullable; minimum guest count when applicable |
+| `max_pax` | INT | YES | NULL | Altered to nullable; maximum guest count when applicable |
+
+### `catering_bookings` (Altered)
+Migration: `2026_11_26_000001_update_food_packages_and_catering_bookings_table.php`
+
+| Field | Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `drink_option` | ENUM('Solo','Bottled Water','Softdrinks') | YES | NULL | Selected drink option tier for Per Pax catering packages |
+

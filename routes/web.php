@@ -4,6 +4,8 @@ use App\Http\Controllers\AdminAvailabilityCalendarController;
 use App\Http\Controllers\AdminCateringBookingController;
 use App\Http\Controllers\AdminNotificationController;
 use App\Http\Controllers\AdminOrderController;
+use App\Http\Controllers\AdminPaymentController;
+use App\Http\Controllers\AdminMenuController;
 use App\Http\Controllers\AdminReportingController;
 use App\Http\Controllers\AdminReviewController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -11,12 +13,12 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CateringBookingController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CustomerAccountController;
 use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\FoodPackageController;
+use App\Http\Controllers\PaymentProofController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportController;
 use App\Http\Controllers\PublicCatalogController;
@@ -29,6 +31,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     $bestSellers = Product::with('category')
         ->where('is_available', true)
+        ->withSum(['orderItems as units_sold' => fn ($items) => $items->whereHas(
+            'order',
+            fn ($order) => $order->where('status', '!=', 'Cancelled')
+        )], 'quantity')
+        ->orderByDesc('units_sold')
         ->orderBy('product_id')
         ->limit(4)
         ->get();
@@ -42,12 +49,14 @@ Route::get('/', function () {
     return view('home', compact('bestSellers', 'approvedReviews', 'averageRating'));
 })->name('home');
 
+Route::get('/menu', [PublicCatalogController::class, 'menu'])->name('menu.index');
 Route::get('/products', [PublicCatalogController::class, 'products'])->name('products.index');
 Route::get('/products/{product}', [PublicCatalogController::class, 'product'])->name('products.show');
 Route::get('/packages', [PublicCatalogController::class, 'packages'])->name('packages.index');
 Route::get('/about', [PublicCatalogController::class, 'about'])->name('about');
 Route::get('/contact', [PublicCatalogController::class, 'contact'])->name('contact');
 Route::get('/reviews', [PublicCatalogController::class, 'reviews'])->name('reviews');
+Route::get('/faq', [PublicCatalogController::class, 'faq'])->name('faq');
 
 Route::middleware(['auth', 'customer'])->group(function () {
     Route::get('/my-reviews', [ReviewController::class, 'index'])->name('reviews.mine');
@@ -70,6 +79,7 @@ Route::middleware(['auth', 'customer'])->group(function () {
     Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/confirmation', [CustomerOrderController::class, 'confirmation'])->name('orders.confirmation');
+    Route::post('/orders/{order}/payments/{payment}/proof', [PaymentProofController::class, 'store'])->name('payments.proof');
 
     Route::get('/account', [CustomerAccountController::class, 'edit'])->name('account.edit');
     Route::put('/account', [CustomerAccountController::class, 'update'])->name('account.update');
@@ -92,6 +102,7 @@ Route::post('/logout', [LoginController::class, 'destroy'])
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/', [AdminReportingController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/menu', [AdminMenuController::class, 'index'])->name('admin.menu.index');
     Route::get('/prep-sheet', [AdminReportingController::class, 'prepSheet'])->name('admin.prep-sheet');
     Route::get('/prep-sheet/pdf', [AdminReportingController::class, 'prepSheetPdf'])->name('admin.prep-sheet.pdf');
     Route::get('/prep-sheet/csv', [AdminReportingController::class, 'prepSheetCsv'])->name('admin.prep-sheet.csv');
@@ -106,19 +117,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::patch('/catering-bookings/{booking}/confirm', [AdminCateringBookingController::class, 'confirm'])->name('admin.catering-bookings.confirm');
     Route::patch('/catering-bookings/{booking}/reject', [AdminCateringBookingController::class, 'reject'])->name('admin.catering-bookings.reject');
     Route::get('/availability-calendar', [AdminAvailabilityCalendarController::class, 'index'])->name('admin.availability.index');
+    Route::get('/availability-calendar/events', [AdminAvailabilityCalendarController::class, 'events'])->name('admin.availability.events');
     Route::post('/availability-calendar', [AdminAvailabilityCalendarController::class, 'store'])->name('admin.availability.store');
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders.index');
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status');
+    Route::patch('/payments/{payment}/verify', [AdminPaymentController::class, 'verify'])->name('admin.payments.verify');
+    Route::patch('/payments/{payment}/reject', [AdminPaymentController::class, 'reject'])->name('admin.payments.reject');
     Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('admin.notifications.index');
     Route::patch('/notifications/{notification}/read', [AdminNotificationController::class, 'markRead'])->name('admin.notifications.read');
-    Route::resource('categories', CategoryController::class)->except(['show'])->names([
-        'index' => 'admin.categories.index',
-        'create' => 'admin.categories.create',
-        'store' => 'admin.categories.store',
-        'edit' => 'admin.categories.edit',
-        'update' => 'admin.categories.update',
-        'destroy' => 'admin.categories.destroy',
-    ]);
     Route::resource('products', ProductController::class)->except(['show'])->names([
         'index' => 'admin.products.index',
         'create' => 'admin.products.create',

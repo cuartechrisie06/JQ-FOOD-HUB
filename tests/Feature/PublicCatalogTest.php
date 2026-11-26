@@ -33,40 +33,49 @@ class PublicCatalogTest extends TestCase
         $this->createProduct('Chicken Packed Lunch', $this->lunch, 150, true);
     }
 
-    public function test_catalog_searches_by_product_name(): void
+    public function test_menu_searches_products_by_name(): void
     {
-        $response = $this->get('/products?search=Fresh');
+        $response = $this->get('/menu?tab=lumpias&search=Fresh');
 
         $response->assertOk();
         $response->assertSee('Fresh Lumpia');
         $response->assertDontSee('Chicken Packed Lunch');
     }
 
-    public function test_catalog_filters_by_category_and_availability(): void
+    public function test_menu_hides_unavailable_products(): void
     {
-        $response = $this->get('/products?category_id='
-            .$this->lumpia->category_id
-            .'&available_today=1');
+        $response = $this->get('/menu?tab=lumpias');
 
         $response->assertOk();
         $response->assertSee('Fresh Lumpia');
+        $response->assertSee('Chicken Packed Lunch');
         $response->assertDontSee('Shanghai Lumpia');
-        $response->assertDontSee('Chicken Packed Lunch');
+        $response->assertDontSee('chip-row');
     }
 
-    public function test_catalog_sorts_by_name_and_price(): void
+    public function test_menu_sorts_products_by_name_and_price(): void
     {
-        $nameResponse = $this->get('/products?sort=name');
+        $nameResponse = $this->get('/menu?tab=lumpias&sort=name');
         $nameResponse->assertOk();
-        $nameResponse->assertSeeInOrder(['Chicken Packed Lunch', 'Fresh Lumpia', 'Shanghai Lumpia']);
+        $nameResponse->assertSeeInOrder(['Chicken Packed Lunch', 'Fresh Lumpia']);
+        $nameResponse->assertDontSee('Shanghai Lumpia');
 
-        $priceResponse = $this->get('/products?sort=price_low');
-        $priceResponse->assertOk();
-        $priceResponse->assertSeeInOrder(['Chicken Packed Lunch', 'Fresh Lumpia', 'Shanghai Lumpia']);
+        $lowPriceResponse = $this->get('/menu?tab=lumpias&sort=price_low');
+        $lowPriceResponse->assertOk();
+        $lowPriceResponse->assertSeeInOrder(['Chicken Packed Lunch', 'Fresh Lumpia']);
 
-        $highPriceResponse = $this->get('/products?sort=price_high');
+        $highPriceResponse = $this->get('/menu?tab=lumpias&sort=price_high');
         $highPriceResponse->assertOk();
-        $highPriceResponse->assertSeeInOrder(['Shanghai Lumpia', 'Fresh Lumpia', 'Chicken Packed Lunch']);
+        $highPriceResponse->assertSeeInOrder(['Fresh Lumpia', 'Chicken Packed Lunch']);
+    }
+
+    public function test_old_products_list_redirects_to_the_lumpias_menu_tab(): void
+    {
+        $this->get('/products')
+            ->assertRedirect(route('menu.index', ['tab' => 'lumpias']));
+
+        $this->get('/products?search=Fresh')
+            ->assertRedirect(route('menu.index', ['search' => 'Fresh', 'tab' => 'lumpias']));
     }
 
     public function test_product_details_and_placeholder_are_available(): void
@@ -77,7 +86,7 @@ class PublicCatalogTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Fresh Lumpia');
-        $response->assertSee('PHP 250.00');
+        $response->assertSee('₱250.00');
         $response->assertSee('placeholder-product.svg');
         $response->assertSee('Add to Cart');
     }
@@ -85,7 +94,8 @@ class PublicCatalogTest extends TestCase
     public function test_public_pages_render(): void
     {
         $this->get('/')->assertOk()->assertSee('Best Sellers');
-        $this->get('/packages')->assertOk();
+        $this->get('/packages')->assertRedirect(route('menu.index', ['tab' => 'packages']));
+        $this->get('/menu')->assertOk();
         $this->get('/about')->assertOk()->assertSee('Our Story');
         $this->get('/contact')->assertOk()->assertSee('Mankilam');
         $this->get('/reviews')->assertOk()->assertSee('No approved reviews yet');

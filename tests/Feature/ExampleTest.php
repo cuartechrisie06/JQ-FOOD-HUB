@@ -32,12 +32,18 @@ class ExampleTest extends TestCase
             Role::orderBy('role_id')->pluck('role_name')->all()
         );
 
-        $owner = User::where('email', env('JQ_OWNER_EMAIL', 'owner@jqfoodhub.local'))->first();
+        $email = env('OWNER_EMAIL', env('JQ_OWNER_EMAIL', 'owner@jqfoodhub.local'));
+        $password = env('OWNER_PASSWORD', env('JQ_OWNER_PASSWORD', 'password'));
+
+        $owner = User::where('email', $email)->first();
 
         $this->assertNotNull($owner);
         $this->assertSame('Owner', $owner->role->role_name);
         $this->assertSame('Active', $owner->status);
-        $this->assertTrue(password_verify(env('JQ_OWNER_PASSWORD', 'password'), $owner->password_hash));
+        $this->assertTrue(password_verify($password, $owner->password_hash));
+
+        // 35 real food packages (20 fixed, 15 per pax)
+        $this->assertSame(35, \App\Models\FoodPackage::count());
     }
 
     public function test_customer_can_register(): void

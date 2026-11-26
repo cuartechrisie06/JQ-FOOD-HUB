@@ -20,7 +20,7 @@
                     <div class="card-body">
                         <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
                             <h2 class="h5 mb-0">Order JQ-{{ str_pad((string) $order->order_id, 4, '0', STR_PAD_LEFT) }}</h2>
-                            <span class="badge text-bg-success">Completed</span>
+                            @include('partials.status-badge', ['status' => 'Completed'])
                         </div>
                         @if($order->review)
                             @if($order->review->status === 'Pending')
@@ -41,7 +41,7 @@
                                         </div>
                                         <div class="col-12 d-flex flex-wrap align-items-center gap-3">
                                             <button class="btn btn-jq" type="submit">Update Pending Review</button>
-                                            <span class="badge text-bg-warning">Pending approval</span>
+                                            <span class="badge-status badge-warning">Pending approval</span>
                                         </div>
                                     </div>
                                 </form>

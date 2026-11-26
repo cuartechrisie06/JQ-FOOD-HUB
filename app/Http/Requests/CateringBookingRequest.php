@@ -13,6 +13,11 @@ class CateringBookingRequest extends FormRequest
         return true;
     }
 
+    protected function getRedirectUrl(): string
+    {
+        return url()->previous().'#booking';
+    }
+
     public function rules(): array
     {
         return [
@@ -23,6 +28,11 @@ class CateringBookingRequest extends FormRequest
                 'required',
                 'integer',
                 Rule::exists('food_packages', 'package_id')->where('is_available', true),
+            ],
+            'drink_option' => [
+                'nullable',
+                'string',
+                Rule::in(['Solo', 'Bottled Water', 'Softdrinks']),
             ],
             'event_time' => ['required', 'date_format:H:i'],
             'event_location' => ['required', 'string', 'max:255'],
@@ -42,10 +52,18 @@ class CateringBookingRequest extends FormRequest
             }
 
             $guestCount = (int) $this->input('guest_count');
-            if ($guestCount < $package->min_pax || $guestCount > $package->max_pax) {
+
+            if ($package->min_pax !== null && $guestCount < $package->min_pax) {
                 $validator->errors()->add(
                     'guest_count',
-                    "Guest count must be between {$package->min_pax} and {$package->max_pax} for the selected package."
+                    "Guest count must be at least {$package->min_pax} for the selected package."
+                );
+            }
+
+            if ($package->max_pax !== null && $guestCount > $package->max_pax) {
+                $validator->errors()->add(
+                    'guest_count',
+                    "Guest count cannot exceed {$package->max_pax} for the selected package."
                 );
             }
         });

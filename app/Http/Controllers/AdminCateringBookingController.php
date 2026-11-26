@@ -6,7 +6,9 @@ use App\Models\AvailabilityCalendar;
 use App\Models\CateringBooking;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Mail\BookingConfirmedMail;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -63,7 +65,10 @@ class AdminCateringBookingController extends Controller
             }
 
             $package = $booking->foodPackage()->firstOrFail();
-            $price = (float) $package->price;
+            $unitPrice = $package->computePricePerPax($booking->drink_option);
+            $total = $package->computeTotal($booking->guest_count, $booking->drink_option);
+            $downpayment = round($total * 0.5, 2);
+
             $order = Order::create([
                 'user_id' => $booking->user_id,
                 'calendar_id' => $booking->calendar_id,
@@ -71,8 +76,8 @@ class AdminCateringBookingController extends Controller
                 'fulfillment_method' => 'Delivery',
                 'fulfillment_time' => $booking->event_time,
                 'delivery_address' => $booking->event_location,
-                'total_amount' => $price,
-                'downpayment_amount' => round($price * 0.5, 2),
+                'total_amount' => $total,
+                'downpayment_amount' => $downpayment,
                 'status' => 'Pending',
                 'notes' => $booking->special_requests,
                 'created_at' => now(),
@@ -81,9 +86,9 @@ class AdminCateringBookingController extends Controller
             $order->items()->create([
                 'product_id' => null,
                 'package_id' => $package->package_id,
-                'quantity' => 1,
-                'unit_price' => $price,
-                'subtotal' => $price,
+                'quantity' => $package->pricing_type === 'Per Pax' ? $booking->guest_count : 1,
+                'unit_price' => $unitPrice,
+                'subtotal' => $total,
             ]);
 
             Payment::create([
@@ -106,6 +111,11 @@ class AdminCateringBookingController extends Controller
 
             return $order;
         });
+
+        if ($order) {
+            $order->loadMissing('user');
+            Mail::to($order->user->email)->queue(new BookingConfirmedMail($order));
+        }
 
         return back()->with('status', $order ? 'Booking confirmed and order created.' : 'This booking already has an order.');
     }

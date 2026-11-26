@@ -26,7 +26,7 @@
                     <div class="card-body">
                         <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
                             <h2 class="h5 mb-0">Order JQ-{{ str_pad((string) $review->order_id, 4, '0', STR_PAD_LEFT) }} · {{ $review->user->full_name }}</h2>
-                            <span class="badge {{ $review->status === 'Approved' ? 'text-bg-success' : ($review->status === 'Pending' ? 'text-bg-warning' : 'text-bg-secondary') }}">{{ $review->status }}</span>
+                            @include('partials.status-badge', ['status' => $review->status])
                         </div>
                         <p class="mb-1"><strong>{{ $review->rating }} / 5</strong> · {{ $review->order->calendar->slot_date->format('M j, Y') }}</p>
                         <p class="mb-3 text-break">{{ $review->comment ?: 'No written comment.' }}</p>
@@ -45,7 +45,7 @@
                                     <button class="btn btn-sm btn-outline-dark" type="submit">Hide</button>
                                 </form>
                             @endif
-                            <form method="POST" action="{{ route('admin.reviews.destroy', $review) }}" onsubmit="return confirm('Delete this review permanently?')">
+                            <form method="POST" action="{{ route('admin.reviews.destroy', $review) }}" data-confirm="Delete this review permanently? This cannot be undone." data-confirm-label="Yes, delete">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
                             </form>

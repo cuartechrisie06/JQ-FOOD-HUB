@@ -14,8 +14,18 @@ class CateringBooking extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'user_id', 'package_id', 'calendar_id', 'order_id', 'event_type', 'event_time',
-        'event_location', 'guest_count', 'special_requests', 'status', 'created_at',
+        'user_id',
+        'package_id',
+        'calendar_id',
+        'order_id',
+        'event_type',
+        'event_time',
+        'event_location',
+        'guest_count',
+        'drink_option',
+        'special_requests',
+        'status',
+        'created_at',
     ];
 
     protected function casts(): array
@@ -41,5 +51,20 @@ class CateringBooking extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'order_id', 'order_id');
+    }
+
+    public function computeTotal(): float
+    {
+        $package = $this->foodPackage;
+        if (! $package) {
+            return 0.0;
+        }
+
+        return $package->computeTotal($this->guest_count, $this->drink_option);
+    }
+
+    public function computeDownpayment(): float
+    {
+        return round($this->computeTotal() * 0.5, 2);
     }
 }

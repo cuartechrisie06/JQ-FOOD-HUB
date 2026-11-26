@@ -6,14 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class LoginController extends Controller
 {
-    public function create(): View
+    public function create(Request $request): View
     {
+        // Remember where a guest came from (e.g. a product page) so login
+        // returns them there instead of the home page.
+        $previous = url()->previous();
+        $isAuthPage = (bool) preg_match('#/(login|register|forgot-password|reset-password)#', $previous);
+
+        if (! $request->session()->has('url.intended')
+            && str_starts_with($previous, url('/'))
+            && rtrim($previous, '/') !== rtrim(url('/'), '/')
+            && ! $isAuthPage) {
+            $request->session()->put('url.intended', $previous);
+        }
+
         return view('auth.login');
     }
 
